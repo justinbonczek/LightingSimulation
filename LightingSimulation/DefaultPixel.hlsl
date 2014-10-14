@@ -9,6 +9,10 @@ cbuffer perFrame : register(b0)
 	matrix projection;
 	float3 eyePos;
 	float time;
+	float4 fogColor;
+	float fogStart;
+	float fogRange;
+	float pad[2];
 };
 
 cbuffer perObject : register(b1)
@@ -46,6 +50,8 @@ float4 main(VertexToPixel input) : SV_TARGET
 		float3 bumpedNormal = mul(normalT, TBN);
 	bumpedNormal = normalize(bumpedNormal);
 
+	float distToEye = length(eyePos - input.worldpos);
+
 	float3 toEye = normalize(eyePos - input.worldpos);
 	float4 ambient = float4(0, 0, 0, 0);
 	float4 diffuse = float4(0, 0, 0, 0);
@@ -70,6 +76,11 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float4 texColor = _Texture.Sample(_Sampler, input.uv);
 
 	float4 litColor = texColor * (ambient + diffuse) + spec;
+
+	float fogLerp = saturate((distToEye - fogStart) / fogRange);
+
+	litColor = lerp(litColor, fogColor, fogLerp);
+	
 	litColor.a = lightMat.diffuse.a;
 
 	return litColor;

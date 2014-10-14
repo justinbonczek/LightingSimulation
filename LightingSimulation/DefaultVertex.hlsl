@@ -9,6 +9,10 @@ cbuffer perFrame : register(b0)
 	matrix projection;
 	float3 eyePos;
 	float time;
+	float4 fogColor;
+	float fogStart;
+	float fogRange;
+	float pad[2];
 };
 
 cbuffer perObject : register(b1)

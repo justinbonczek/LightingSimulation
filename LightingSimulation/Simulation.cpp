@@ -69,30 +69,34 @@ void Simulation::LoadAssets()
 	wsd.MipLODBias = 0;
 	dev->CreateSamplerState(&wsd, &wrapSampler);
 
-	dLight.ambient =	XMFLOAT4(0.0, 0.0, 0.0, 1.0);
+	dLight.ambient =	XMFLOAT4(0.2, 0.2, 0.2, 1.0);
 	dLight.diffuse =	XMFLOAT4(1.0, 1.0, 1.0, 1.0);
-	dLight.specular =	XMFLOAT4(1.0, 1.0, 1.0, 1.0);
-	dLight.direction =	XMFLOAT3(0.5, -0.5f, 0.0f);
+	dLight.specular =	XMFLOAT4(0.4, 0.4, 0.4, 1.0);
+	dLight.direction =	XMFLOAT3(0.0, 0.0f, 0.0f);
 	
-	pLight.ambient =	XMFLOAT4(0.0, 0.0, 0.0, 0.0);
+	pLight.ambient =	XMFLOAT4(0.2, 0.2, 0., 1.0);
 	pLight.diffuse =	XMFLOAT4(0.7, 0.7, 0.7, 1.0);
 	pLight.specular =	XMFLOAT4(0.9, 0.9, 0.9, 1.0);
 	pLight.attenuation = XMFLOAT3(0.0f, 0.1f, 0.0f);
-	pLight.position =	 XMFLOAT3(5.0, -15.0, 0.0);
-	pLight.range =		15.0f;
+	pLight.position =	 XMFLOAT3(0.0, 15.0, 0.0);
+	pLight.range =		25.0f;
 
 	sLight.ambient =	XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	sLight.diffuse =	XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	sLight.specular =	XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	sLight.attenuation = XMFLOAT3(1.0f, 0.0f, 0.0f);
-	sLight.position = XMFLOAT3(0.0, -10.0, 0.0);
-	sLight.direction = XMFLOAT3(0.0, -1.0, 0.0);
+	sLight.position =	XMFLOAT3(0.0, 10.0, 0.0);
+	sLight.direction =	XMFLOAT3(0.0, -1.0, 0.0);
 	sLight.spot = 500.0f;
 	sLight.range = 10000.0f;
 
 	perFrameData.dLight = dLight;
 	perFrameData.pLight = pLight;
 	perFrameData.sLight = sLight;
+
+	perFrameData.fogStart = 20.0;
+	perFrameData.fogRange = 20.0;
+	perFrameData.fogColor = XMFLOAT4(0.7f, 0.7f, 0.7f, 0.2f);
 
 	MeshData plane;
 	MeshGenerator::CreatePlane(5.0, 5.0, 2, 2, plane);
@@ -103,19 +107,26 @@ void Simulation::LoadAssets()
 	brickMat->LoadShader(L"DefaultPixel.cso", Pixel, dev);
 	brickMat->LoadNormal(L"Textures/brick_normal.png", dev);
 
+	Material* defaultMat = new Material(L"Textures/default.png", wrapSampler, dev);
+	defaultMat->LoadShader(L"DefaultVertex.cso", Vert, dev);
+	defaultMat->LoadShader(L"PixelNoNormal.cso", Pixel, dev);
+	defaultMat->LoadNormal(L"Textures/brick_normal.png", dev);
+
 	LightMaterial* lightMat = new LightMaterial();
-	lightMat->ambient = XMFLOAT4(0.0, 0.0, 0.0, 1.0);
+	lightMat->ambient = XMFLOAT4(0.2, 0.2, 0.2, 1.0);
 	lightMat->diffuse = XMFLOAT4(1.0, 1.0, 1.0, 1.0);
-	lightMat->specular = XMFLOAT4(0.0, 0.0, 0.0, 1.0);
+	lightMat->specular = XMFLOAT4(0.0, 0.0, 0.0, 16.0);
 
 	GameObject* obj = new GameObject(planeMesh, brickMat);
 	obj->SetLightMaterial(lightMat);
 	objects.push_back(obj);
 
-	GameObject* chair = new GameObject(new Mesh("Models/chair.fbx", dev), brickMat);
+	GameObject* chair = new GameObject(new Mesh("Models/chair.fbx", dev), defaultMat);
 	chair->SetLightMaterial(lightMat);
+	chair->SetPosition(XMFLOAT3(0.0, 5.0, 0.0));
+	chair->SetScale(XMFLOAT3(1.0, 0.25, 1.0));
 	objects.push_back(chair);
-}
+}	
 
 void Simulation::InitializePipeline()
 {
@@ -230,7 +241,7 @@ void Simulation::Update(float dt)
 			time -= 100;
 	}
 	MoveCamera(dt);
-	perFrameData.eyePos;
+	perFrameData.eyePos = m_Camera.GetPosition();
 
 	for (GameObject* obj : objects)
 	{

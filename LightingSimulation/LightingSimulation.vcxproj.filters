@@ -88,6 +88,9 @@
     <FxCompile Include="DefaultVertex.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="PixelNoNormal.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Lighting.hlsli">

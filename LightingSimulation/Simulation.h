@@ -22,6 +22,10 @@ struct PerFrameData
 	XMFLOAT4X4 projection;
 	XMFLOAT3 eyePos;
 	float time;
+	XMFLOAT4 fogColor;
+	float fogStart;
+	float fogRange;
+	float pad[2];
 };
 
 struct PerObjectData
